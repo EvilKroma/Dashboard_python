@@ -1,25 +1,192 @@
-# Dashboard_python
+# Dashboard Python - Prix des Carburants
 
-API utilisée :
+Dashboard interactif permettant de visualiser et analyser les prix des carburants en France en temps réel grâce aux données ouvertes du gouvernement français.
 
-Prix des carburants (data.economie.gouv.fr)
-L'API du gouvernement français est excellente, gratuite et très riche en données chiffrées.
+## User Guide
 
-Données GPS : Localisation de toutes les stations-service de France.
+### Prérequis
+- Python 3.7 ou supérieur
+- pip (gestionnaire de packages Python)
 
-Données histogramme : Distribution des prix (ex: Histogramme des prix du Gazole entre 1.60€ et 2.00€).
+### Installation et déploiement
 
-Le petit plus : Permet de faire des filtres intéressants (par département, par marque).
+1. **Cloner le dépôt**
+   ```bash
+   git clone https://github.com/EvilKroma/Dashboard_python.git
+   cd Dashboard_python
+   ```
 
-Documentation : [data.economie.gouv.fr](https://data.economie.gouv.fr/explore/dataset/prix-des-carburants-en-france-flux-instantane-v2/api/)
+2. **Créer un environnement virtuel**
+   ```bash
+   python3 -m venv .venv
+   source .venv/bin/activate  # Sur Linux/macOS
+   # ou
+   .venv\Scripts\activate     # Sur Windows
+   ```
 
-Endpoint : /api/explore/v2.1/catalog/datasets/prix-des-carburants-en-france-flux-instantane-v2/records?limit=20 
+3. **Installer les dépendances**
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-## Démarrage rapide
+4. **Lancer l'application**
+   ```bash
+   python main.py
+   ```
 
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-python main.py
+5. **Accéder au dashboard**
+   Ouvrir votre navigateur et aller à l'adresse : `http://127.0.0.1:8050`
+
+### Utilisation
+
+- **Page d'accueil** : Visualisation interactive des stations-service avec carte et tableau de données
+- **Filtrage** : Sélectionner une ville spécifique via le menu déroulant pour filtrer les résultats
+- **Carte interactive** : Points cliquables affichant les détails des stations (prix, carburants disponibles)
+- **Page À propos** : Informations sur le projet et les données utilisées
+
+## Data
+
+### Source des données
+- **API** : Prix des carburants (data.economie.gouv.fr)
+- **Documentation** : [data.economie.gouv.fr](https://data.economie.gouv.fr/explore/dataset/prix-des-carburants-en-france-flux-instantane-v2/api/)
+- **Endpoint** : `/api/explore/v2.1/catalog/datasets/prix-des-carburants-en-france-flux-instantane-v2/records`
+
+### Caractéristiques des données
+- **Mise à jour** : Données en temps réel
+- **Couverture géographique** : Toute la France
+- **Types de carburants** : Gazole, SP95, SP98, E10, E85, GPLc
+- **Informations disponibles** :
+  - Localisation GPS des stations-service
+  - Prix par type de carburant
+  - Informations sur les stations (ville, code postal)
+
+### Structure des données
+Les données sont récupérées via l'API et contiennent notamment :
+- `geom` : Coordonnées GPS (longitude, latitude)
+- `ville` : Ville de la station
+- `cp` : Code postal
+- `gazole_prix`, `sp95_prix`, etc. : Prix des différents carburants
+- `carburants_disponibles` : Liste des carburants proposés
+
+## Developer Guide
+
+### Architecture du projet
+
 ```
+Dashboard_python/
+├── main.py                 # Point d'entrée de l'application
+├── config.py              # Configuration de l'API
+├── requirements.txt       # Dépendances Python
+└── src/
+    ├── components/        # Composants réutilisables
+    │   ├── navbar.py      # Barre de navigation
+    │   ├── header.py      # En-tête
+    │   ├── footer.py      # Pied de page
+    │   └── ...
+    ├── pages/            # Pages de l'application
+    │   ├── home.py       # Page d'accueil avec dashboard
+    │   ├── about.py      # Page à propos
+    │   └── simple_page.py # Layout principal
+    └── utils/            # Utilitaires
+        ├── get_data.py   # Récupération des données API
+        ├── clean_data.py # Nettoyage des données
+        └── common_functions.py # Fonctions communes
+```
+
+### Ajouter une nouvelle page
+
+1. **Créer le fichier de la page** dans `src/pages/`
+   ```python
+   # src/pages/ma_nouvelle_page.py
+   from dash import html, dcc
+   
+   def get_layout():
+       return html.Div([
+           html.H1("Ma Nouvelle Page"),
+           # Contenu de votre page
+       ])
+   ```
+
+2. **Importer dans simple_page.py**
+   ```python
+   from . import ma_nouvelle_page
+   ```
+
+3. **Ajouter la route** dans le callback de `simple_page.py`
+   ```python
+   def display_page(pathname):
+       if pathname == '/ma-nouvelle-page':
+           return ma_nouvelle_page.get_layout()
+       # autres conditions...
+   ```
+
+4. **Ajouter le lien** dans la navbar (`src/components/navbar.py`)
+
+### Ajouter un nouveau graphique
+
+1. **Créer une fonction de graphique** dans un composant
+   ```python
+   import plotly.express as px
+   
+   def create_mon_graphique(df):
+       fig = px.bar(df, x='colonne_x', y='colonne_y')
+       return fig
+   ```
+
+2. **Intégrer dans une page**
+   ```python
+   dcc.Graph(figure=create_mon_graphique(data))
+   ```
+
+3. **Ajouter des callbacks** si nécessaire pour l'interactivité
+
+### Technologies utilisées
+- **Dash** : Framework web pour applications analytiques
+- **Plotly** : Bibliothèque de visualisation interactive
+- **Pandas** : Manipulation et analyse des données
+- **Requests** : Client HTTP pour les appels API
+
+## Rapport d'analyse
+
+### Principales conclusions
+
+1. **Distribution géographique** : Les stations-service sont inégalement réparties sur le territoire, avec une concentration plus élevée en zones urbaines et le long des axes routiers principaux.
+
+2. **Variabilité des prix** : 
+   - Les prix varient significativement selon les régions
+   - Les stations en zones urbaines tendent à avoir des prix légèrement plus élevés
+   - Certaines enseignes pratiquent des prix systématiquement inférieurs
+
+3. **Disponibilité des carburants** :
+   - Le Gazole et SP95 sont disponibles dans pratiquement toutes les stations
+   - L'E85 et le GPLc sont moins répandus, principalement dans certaines régions
+   - Le SP98 est généralement disponible dans les stations des grandes enseignes
+
+4. **Patterns temporels** : Les données en temps réel permettent d'observer des variations de prix tout au long de la journée et de la semaine.
+
+### Insights techniques
+- L'API gouvernementale est très fiable avec un taux de disponibilité élevé
+- Les données GPS permettent une géolocalisation précise des stations
+- Le format JSON facilite l'intégration et le traitement des données
+
+## Copyright
+
+Je déclare sur l'honneur que le code fourni a été produit par moi-même, à l'exception des lignes ci-dessous :
+
+### Code emprunté et références
+
+**Aucune ligne de code n'a été directement empruntée à des sources externes.**
+
+### Bibliothèques et frameworks utilisés
+- **Dash** (Plotly) : Framework web pour applications analytiques - [Documentation officielle](https://dash.plotly.com/)
+- **Plotly** : Bibliothèque de visualisation - [Documentation officielle](https://plotly.com/python/)
+- **Pandas** : Manipulation de données - [Documentation officielle](https://pandas.pydata.org/)
+- **Requests** : Client HTTP - [Documentation officielle](https://requests.readthedocs.io/)
+
+### Données
+- **API Prix des carburants** : data.economie.gouv.fr - Données ouvertes du gouvernement français
+
+---
+
+Toute ligne non déclarée ci-dessus est réputée être produite par l'auteur du projet. L'absence ou l'omission de déclaration sera considérée comme du plagiat.
+
