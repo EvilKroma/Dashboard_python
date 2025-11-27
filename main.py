@@ -12,7 +12,7 @@ app.layout = simple_page.get_layout()
 
 # Callback pour la mise à jour du dashboard (home component)
 @callback(
-    [Output('data-table', 'data'), Output('stations-map', 'figure')],
+    [Output('data-table', 'data'), Output('stations-map', 'figure'), Output('price-histogram', 'figure')],
     Input('city-dropdown', 'value')
 )
 def update_dashboard(selected_city):
@@ -27,18 +27,18 @@ def update_dashboard(selected_city):
     
     customdata = []
     for idx, row in df.iterrows():
-        cp = row['cp']
-        carburants = row['carburants_disponibles']
+        cp = row.get('cp', '')
+        carburants = row.get('carburants_disponibles', '')
         
         # Liste des prix dispo
         prix_info = []
         price_mapping = {
-            'Gazole': row['gazole_prix'],
-            'SP95': row['sp95_prix'], 
-            'E85': row['e85_prix'],
-            'GPLc': row['gplc_prix'],
-            'E10': row['e10_prix'],
-            'SP98': row['sp98_prix']
+            'Gazole': row.get('gazole_prix'),
+            'SP95': row.get('sp95_prix'), 
+            'E85': row.get('e85_prix'),
+            'GPLc': row.get('gplc_prix'),
+            'E10': row.get('e10_prix'),
+            'SP98': row.get('sp98_prix')
         }
         
         for fuel, price in price_mapping.items():
@@ -55,7 +55,7 @@ def update_dashboard(selected_city):
         lat='latitude',
         lon='longitude',
         hover_name='ville',
-        color_discrete_sequence=['#e74c3c'],  # Rouge plus moderne
+        color_discrete_sequence=['#e74c3c'],
         zoom=5 if selected_city == 'ALL' else 12,
         height=500,
         title=f"Stations-service {selected_city if selected_city != 'ALL' else 'en France'}"
@@ -65,18 +65,48 @@ def update_dashboard(selected_city):
     fig.update_traces(
         customdata=customdata,
         hovertemplate=hover_template,
-        marker=dict(size=8, opacity=0.8)  # Marqueurs plus visibles
+        marker=dict(size=8, opacity=0.8)
     )
     
-    # Config de la carte avec style amélioré
     fig.update_layout(
         mapbox_style="open-street-map",
         margin={"r":10,"t":40,"l":10,"b":10},
         title_font_size=16,
         title_font_color='#2c3e50'
     )
-    
-    return df.to_dict("records"), fig
+
+    # --- Construction de l'histogramme des prix ---
+    price_cols = ['gazole_prix', 'sp95_prix', 'sp98_prix', 'e85_prix', 'e10_prix', 'gplc_prix']
+    available_cols = [c for c in price_cols if c in df.columns]
+    if len(available_cols) == 0:
+        # Figure vide si aucune colonne prix disponible
+        fig_hist = px.histogram(title="Aucun prix disponible")
+    else:
+        prices_df = df[available_cols].melt(var_name='fuel', value_name='price')
+        prices_df = prices_df.dropna(subset=['price'])
+        prices_df = prices_df[prices_df['price'] > 0]
+        mapping = {
+            'gazole_prix': 'Gazole',
+            'sp95_prix': 'SP95',
+            'sp98_prix': 'SP98',
+            'e85_prix': 'E85',
+            'e10_prix': 'E10',
+            'gplc_prix': 'GPLc'
+        }
+        prices_df['fuel'] = prices_df['fuel'].map(mapping).fillna(prices_df['fuel'])
+        fig_hist = px.histogram(
+            prices_df,
+            x='price',
+            color='fuel',
+            nbins=60,
+            barmode='overlay',
+            labels={'price': 'Prix (€)', 'fuel': 'Type carburant'},
+            title='Distribution des prix par type de carburant'
+        )
+        fig_hist.update_traces(opacity=0.7)
+        fig_hist.update_layout(margin={"r":10,"t":40,"l":10,"b":10}, legend_title_text='Carburant')
+
+    return df.to_dict("records"), fig, fig_hist
 
 if __name__ == "__main__":
     app.run(debug=True)

@@ -3,7 +3,7 @@ import plotly.express as px
 import pandas as pd
 
 from src.utils.get_data import fetch_multiple_records
-from src.components import header, footer, component1
+from src.components import header, footer, component1, price_histogram
 
 # Fetch initial
 initial_df = fetch_multiple_records(300)
@@ -44,10 +44,12 @@ def get_layout():
             'boxShadow': '0 2px 4px rgba(0,0,0,0.1)'
         }),
         
-        # Section principale avec carte
+        # Section principale avec carte et histogramme
         html.Div([
             # Carte (component1)
-            component1.get_map_component()
+            component1.get_map_component(),
+            # Histogramme des prix (nouveau composant)
+            price_histogram.get_price_histogram_component()
         ], className="row"),
         
         # Section tableau
