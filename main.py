@@ -3,7 +3,8 @@ import plotly.express as px
 import pandas as pd
 
 from src.pages import simple_page
-from src.utils.get_data import fetch_multiple_records
+from src.utils.get_data import get_data_for_dashboard
+from config import DEFAULT_LIMIT
 
 app = Dash(__name__, suppress_callback_exceptions=True)
 
@@ -16,7 +17,7 @@ app.layout = simple_page.get_layout()
     Input('city-dropdown', 'value')
 )
 def update_dashboard(selected_city):
-    df = fetch_multiple_records(300)
+    df = get_data_for_dashboard(force_refresh=False)
     if selected_city and selected_city != 'ALL':
         df = df[df['ville'] == selected_city]
     

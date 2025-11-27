@@ -39,6 +39,13 @@ Dashboard interactif permettant de visualiser et analyser les prix des carburant
 
 ### Utilisation
 
+#### Première utilisation
+Lors de la première utilisation, les données seront automatiquement récupérées et traitées selon le workflow suivant :
+1. **Récupération** des données brutes depuis l'API → `data/raw/rawdata.json`
+2. **Nettoyage** et structuration → `data/cleaned/cleaneddata.json` 
+3. **Affichage** dans le dashboard
+
+#### Navigation dans l'application
 - **Page d'accueil** : Visualisation interactive des stations-service avec carte et tableau de données
 - **Filtrage** : Sélectionner une ville spécifique via le menu déroulant pour filtrer les résultats
 - **Carte interactive** : Points cliquables affichant les détails des stations (prix, carburants disponibles)
@@ -51,9 +58,19 @@ Dashboard interactif permettant de visualiser et analyser les prix des carburant
 - **Documentation** : [data.economie.gouv.fr](https://data.economie.gouv.fr/explore/dataset/prix-des-carburants-en-france-flux-instantane-v2/api/)
 - **Endpoint** : `/api/explore/v2.1/catalog/datasets/prix-des-carburants-en-france-flux-instantane-v2/records`
 
+### Workflow de traitement des données
+
+Le projet suit un pipeline structuré en 5 étapes :
+
+1. ** Récupération** : Les données brutes sont récupérées depuis l'API gouvernementale
+2. ** Stockage raw** : Sauvegarde au format JSON dans `data/raw/rawdata.json`
+3. ** Nettoyage** : Traitement et structuration des données avec `clean_data.py`
+4. ** Stockage clean** : Sauvegarde des données nettoyées dans `data/cleaned/cleaneddata.json`
+5. ** Affichage** : Utilisation des données nettoyées pour le dashboard
+
 ### Caractéristiques des données
 - **Mise à jour** : Données en temps réel
-- **Couverture géographique** : Toute la France
+- **Couverture géographique** : Toute la France (métropole + DOM-TOM)
 - **Types de carburants** : Gazole, SP95, SP98, E10, E85, GPLc
 - **Informations disponibles** :
   - Localisation GPS des stations-service
@@ -61,12 +78,6 @@ Dashboard interactif permettant de visualiser et analyser les prix des carburant
   - Informations sur les stations (ville, code postal)
 
 ### Structure des données
-Les données sont récupérées via l'API et contiennent notamment :
-- `geom` : Coordonnées GPS (longitude, latitude)
-- `ville` : Ville de la station
-- `cp` : Code postal
-- `gazole_prix`, `sp95_prix`, etc. : Prix des différents carburants
-- `carburants_disponibles` : Liste des carburants proposés
 
 ## Developer Guide
 
@@ -77,6 +88,11 @@ Dashboard_python/
 ├── main.py                 # Point d'entrée de l'application
 ├── config.py              # Configuration de l'API
 ├── requirements.txt       # Dépendances Python
+├── data/                  # Stockage des données
+│   ├── raw/              # Données brutes de l'API
+│   │   └── rawdata.json  # JSON brut depuis l'API
+│   └── cleaned/          # Données nettoyées
+│       └── cleaneddata.json # JSON structuré pour le dashboard
 └── src/
     ├── components/        # Composants réutilisables
     │   ├── navbar.py      # Barre de navigation
@@ -88,9 +104,26 @@ Dashboard_python/
     │   ├── about.py      # Page à propos
     │   └── simple_page.py # Layout principal
     └── utils/            # Utilitaires
-        ├── get_data.py   # Récupération des données API
-        ├── clean_data.py # Nettoyage des données
+        ├── get_data.py   # Pipeline de récupération et stockage
+        ├── clean_data.py # Algorithmes de nettoyage
         └── common_functions.py # Fonctions communes
+```
+### Pipeline de données
+
+Le système suit un workflow rigoureux :
+
+1. **API → Raw JSON** (`fetch_raw_data_from_api`)
+2. **Raw JSON → Cleaned JSON** (`clean_raw_data`) 
+3. **Cleaned JSON → DataFrame** (`load_cleaned_data`)
+
+```python
+# Utilisation du pipeline complet
+from src.utils.get_data import refresh_data_pipeline
+df = refresh_data_pipeline(limit=300)
+
+# Ou chargement des données existantes  
+from src.utils.get_data import get_data_for_dashboard
+df = get_data_for_dashboard(force_refresh=False)
 ```
 
 ### Ajouter une nouvelle page
