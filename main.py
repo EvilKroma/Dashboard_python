@@ -75,11 +75,10 @@ def update_dashboard(selected_city):
         title_font_color='#2c3e50'
     )
 
-    # --- Construction de l'histogramme des prix ---
+    # Histogramme des prix
     price_cols = ['gazole_prix', 'sp95_prix', 'sp98_prix', 'e85_prix', 'e10_prix', 'gplc_prix']
     available_cols = [c for c in price_cols if c in df.columns]
     if len(available_cols) == 0:
-        # Figure vide si aucune colonne prix disponible
         fig_hist = px.histogram(title="Aucun prix disponible")
     else:
         prices_df = df[available_cols].melt(var_name='fuel', value_name='price')
@@ -96,15 +95,19 @@ def update_dashboard(selected_city):
         prices_df['fuel'] = prices_df['fuel'].map(mapping).fillna(prices_df['fuel'])
         fig_hist = px.histogram(
             prices_df,
-            x='price',
-            color='fuel',
-            nbins=60,
+            y='price', 
+            x='fuel',   
+            nbins=20,
             barmode='overlay',
             labels={'price': 'Prix (€)', 'fuel': 'Type carburant'},
             title='Distribution des prix par type de carburant'
         )
         fig_hist.update_traces(opacity=0.7)
-        fig_hist.update_layout(margin={"r":10,"t":40,"l":10,"b":10}, legend_title_text='Carburant')
+        fig_hist.update_layout(
+            margin={"r":10,"t":40,"l":10,"b":10}, 
+            legend_title_text='Carburant',
+            yaxis=dict(range=[0, 4])  
+        )
 
     return df.to_dict("records"), fig, fig_hist
 

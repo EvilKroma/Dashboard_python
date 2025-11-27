@@ -18,7 +18,7 @@ def get_layout():
                     "Ce projet s'inscrit dans le cadre du mini-projet de visualisation de données à ",
                     html.Strong("ESIEE PARIS"),
                     " réalisé par ",
-                    html.Strong("Dorian DENEUCHATEL"),
+                    html.Strong("Dorian DENEUCHATEL / Flavien NOUET"),
                     " de la promotion ",
                     html.Strong("E3FI"),
                     "."
