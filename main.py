@@ -93,20 +93,26 @@ def update_dashboard(selected_city):
             'gplc_prix': 'GPLc'
         }
         prices_df['fuel'] = prices_df['fuel'].map(mapping).fillna(prices_df['fuel'])
-        fig_hist = px.histogram(
-            prices_df,
-            y='price', 
-            x='fuel',   
-            nbins=20,
-            barmode='overlay',
-            labels={'price': 'Prix (€)', 'fuel': 'Type carburant'},
-            title='Distribution des prix par type de carburant'
+
+        # Calcul des moyennes par carburant et moyenne globale
+        mean_by_fuel = prices_df.groupby('fuel', as_index=False)['price'].mean()
+        overall_mean = prices_df['price'].mean() if not prices_df.empty else None
+        if overall_mean is not None:
+            mean_by_fuel = pd.concat([mean_by_fuel, pd.DataFrame([{'fuel': 'Moyenne', 'price': overall_mean}])], ignore_index=True)
+
+        # Bar chart montrant la moyenne par carburant + colonne "Moyenne"
+        fig_hist = px.bar(
+            mean_by_fuel,
+            x='fuel',
+            y='price',
+            color='fuel',
+            labels={'price': 'Prix moyen (€)', 'fuel': 'Type carburant'},
+            title='Prix moyen par type de carburant (et moyenne totale)'
         )
-        fig_hist.update_traces(opacity=0.7)
+        fig_hist.update_traces(showlegend=False, opacity=0.85)
         fig_hist.update_layout(
-            margin={"r":10,"t":40,"l":10,"b":10}, 
-            legend_title_text='Carburant',
-            yaxis=dict(range=[0, 4])  
+            margin={"r":10,"t":40,"l":10,"b":10},
+            yaxis=dict(range=[0, max(4, (overall_mean or 0) * 1.1)])  # ajuste l'échelle si besoin
         )
 
     return df.to_dict("records"), fig, fig_hist
