@@ -3,7 +3,7 @@ import plotly.express as px
 import pandas as pd
 
 from src.utils.get_data import fetch_multiple_records
-from src.components import header, footer, component1, price_histogram
+from src.components import header, footer, component1, component2
 
 # Fetch initial
 initial_df = fetch_multiple_records(300)
@@ -49,7 +49,7 @@ def get_layout():
             # Carte (component1)
             component1.get_map_component(),
             # Histogramme des prix (nouveau composant)
-            price_histogram.get_price_histogram_component()
+            component2.get_price_histogram_component()
         ], className="row"),
         
         # Section tableau
