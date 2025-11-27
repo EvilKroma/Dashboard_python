@@ -93,7 +93,8 @@ def get_layout():
                     html.Li("Cartographie interactive avec géolocalisation des stations"),
                     html.Li("Affichage détaillé des prix par type de carburant"),
                     html.Li("Tableau de données paginé avec informations complètes"),
-                    html.Li("Design responsive et professionnel")
+                    html.Li("Design responsive et professionnel"),
+                    html.Li("Histogramme dynamique des prix des carburants avec une moyenne par type de carburant")
                 ], style={'fontSize': '14px', 'lineHeight': '1.8'})
                 
             ], style={
