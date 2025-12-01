@@ -12,7 +12,7 @@ def get_header():
             }
         ),
         html.P(
-            "Projet scolaire ESIEE PARIS - Dorian DENEUCHATEL - E3FI",
+            "Projet scolaire ESIEE PARIS - Dorian DENEUCHATEL / Flavien NOUET - E3FI",
             style={
                 'textAlign': 'center',
                 'color': '#95a5a6',

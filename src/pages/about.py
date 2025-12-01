@@ -18,7 +18,7 @@ def get_layout():
                     "Ce projet s'inscrit dans le cadre du mini-projet de visualisation de données à ",
                     html.Strong("ESIEE PARIS"),
                     " réalisé par ",
-                    html.Strong("Dorian DENEUCHATEL"),
+                    html.Strong("Dorian DENEUCHATEL / Flavien NOUET"),
                     " de la promotion ",
                     html.Strong("E3FI"),
                     "."
@@ -93,7 +93,8 @@ def get_layout():
                     html.Li("Cartographie interactive avec géolocalisation des stations"),
                     html.Li("Affichage détaillé des prix par type de carburant"),
                     html.Li("Tableau de données paginé avec informations complètes"),
-                    html.Li("Design responsive et professionnel")
+                    html.Li("Design responsive et professionnel"),
+                    html.Li("Histogramme dynamique des prix des carburants avec une moyenne par type de carburant")
                 ], style={'fontSize': '14px', 'lineHeight': '1.8'})
                 
             ], style={
