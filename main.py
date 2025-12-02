@@ -26,12 +26,15 @@ def update_dashboard(selected_city, click_data):
     if selected_city and selected_city != 'ALL':
         df = df[df['ville'] == selected_city]
     
+    # Réinitialiser les index après filtrage pour éviter les problèmes d'indexation
+    df = df.reset_index(drop=True)
+    
     # Vérifier si un point a été cliqué
     selected_station = None
     if click_data and 'points' in click_data and len(click_data['points']) > 0:
         point = click_data['points'][0]
         # Récupérer l'index du point cliqué
-        if 'pointIndex' in point:
+        if 'pointIndex' in point and 0 <= point['pointIndex'] < len(df):
             selected_station = df.iloc[point['pointIndex']]
     
     # Pour le hover des pts rouges
