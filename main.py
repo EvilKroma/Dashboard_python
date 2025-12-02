@@ -10,15 +10,29 @@ app = Dash(__name__, suppress_callback_exceptions=True)
 # Layout principal utilisant simple_page comme conteneur
 app.layout = simple_page.get_layout()
 
+# État global pour stocker les données
+current_df = None
+
 # Callback pour la mise à jour du dashboard (home component)
 @callback(
     [Output('data-table', 'data'), Output('stations-map', 'figure'), Output('price-histogram', 'figure')],
-    Input('city-dropdown', 'value')
+    [Input('city-dropdown', 'value'), Input('stations-map', 'clickData')]
 )
-def update_dashboard(selected_city):
+def update_dashboard(selected_city, click_data):
+    global current_df
     df = fetch_multiple_records(300)
+    current_df = df.copy()
+    
     if selected_city and selected_city != 'ALL':
         df = df[df['ville'] == selected_city]
+    
+    # Vérifier si un point a été cliqué
+    selected_station = None
+    if click_data and 'points' in click_data and len(click_data['points']) > 0:
+        point = click_data['points'][0]
+        # Récupérer l'index du point cliqué
+        if 'pointIndex' in point:
+            selected_station = df.iloc[point['pointIndex']]
     
     # Pour le hover des pts rouges
     hover_template = "<b>%{hovertext}</b><br>"
@@ -78,41 +92,66 @@ def update_dashboard(selected_city):
     # Histogramme des prix
     price_cols = ['gazole_prix', 'sp95_prix', 'sp98_prix', 'e85_prix', 'e10_prix', 'gplc_prix']
     available_cols = [c for c in price_cols if c in df.columns]
-    if len(available_cols) == 0:
-        fig_hist = px.histogram(title="Aucun prix disponible")
+    
+    # Si une station est sélectionnée, afficher ses prix
+    if selected_station is not None:
+        station_prices = []
+        for fuel, col in [('Gazole', 'gazole_prix'), ('SP95', 'sp95_prix'), ('SP98', 'sp98_prix'), 
+                          ('E85', 'e85_prix'), ('E10', 'e10_prix'), ('GPLc', 'gplc_prix')]:
+            price = selected_station.get(col)
+            if pd.notna(price) and price > 0:
+                station_prices.append({'fuel': fuel, 'price': price})
+        
+        if station_prices:
+            prices_df = pd.DataFrame(station_prices)
+            fig_hist = px.bar(
+                prices_df,
+                x='fuel',
+                y='price',
+                color='fuel',
+                labels={'price': 'Prix (€)', 'fuel': 'Type carburant'},
+                title=f"Prix à la station: {selected_station.get('ville', 'N/A')}"
+            )
+        else:
+            fig_hist = px.histogram(title="Aucun prix disponible pour cette station")
     else:
-        prices_df = df[available_cols].melt(var_name='fuel', value_name='price')
-        prices_df = prices_df.dropna(subset=['price'])
-        prices_df = prices_df[prices_df['price'] > 0]
-        mapping = {
-            'gazole_prix': 'Gazole',
-            'sp95_prix': 'SP95',
-            'sp98_prix': 'SP98',
-            'e85_prix': 'E85',
-            'e10_prix': 'E10',
-            'gplc_prix': 'GPLc'
-        }
-        prices_df['fuel'] = prices_df['fuel'].map(mapping).fillna(prices_df['fuel'])
+        # Affichage par défaut: moyenne par carburant
+        if len(available_cols) == 0:
+            fig_hist = px.histogram(title="Aucun prix disponible")
+        else:
+            prices_df = df[available_cols].melt(var_name='fuel', value_name='price')
+            prices_df = prices_df.dropna(subset=['price'])
+            prices_df = prices_df[prices_df['price'] > 0]
+            mapping = {
+                'gazole_prix': 'Gazole',
+                'sp95_prix': 'SP95',
+                'sp98_prix': 'SP98',
+                'e85_prix': 'E85',
+                'e10_prix': 'E10',
+                'gplc_prix': 'GPLc'
+            }
+            prices_df['fuel'] = prices_df['fuel'].map(mapping).fillna(prices_df['fuel'])
 
-        # Calcul des moyennes par carburant et moyenne globale
-        mean_by_fuel = prices_df.groupby('fuel', as_index=False)['price'].mean()
-        overall_mean = prices_df['price'].mean() if not prices_df.empty else None
-        if overall_mean is not None:
-            mean_by_fuel = pd.concat([mean_by_fuel, pd.DataFrame([{'fuel': 'Moyenne', 'price': overall_mean}])], ignore_index=True)
+            # Calcul des moyennes par carburant et moyenne globale
+            mean_by_fuel = prices_df.groupby('fuel', as_index=False)['price'].mean()
+            overall_mean = prices_df['price'].mean() if not prices_df.empty else None
+            if overall_mean is not None:
+                mean_by_fuel = pd.concat([mean_by_fuel, pd.DataFrame([{'fuel': 'Moyenne', 'price': overall_mean}])], ignore_index=True)
 
-        # Bar chart montrant la moyenne par carburant + colonne "Moyenne"
-        fig_hist = px.bar(
-            mean_by_fuel,
-            x='fuel',
-            y='price',
-            color='fuel',
-            labels={'price': 'Prix moyen (€)', 'fuel': 'Type carburant'},
-            title='Prix moyen par type de carburant (et moyenne totale)'
-        )
+            # Bar chart montrant la moyenne par carburant + colonne "Moyenne"
+            fig_hist = px.bar(
+                mean_by_fuel,
+                x='fuel',
+                y='price',
+                color='fuel',
+                labels={'price': 'Prix moyen (€)', 'fuel': 'Type carburant'},
+                title='Prix moyen par type de carburant (et moyenne totale)'
+            )
+        
         fig_hist.update_traces(showlegend=False, opacity=0.85)
         fig_hist.update_layout(
             margin={"r":10,"t":40,"l":10,"b":10},
-            yaxis=dict(range=[0, max(4, (overall_mean or 0) * 1.1)])  # ajuste l'échelle si besoin
+            yaxis=dict(range=[0, max(4, 4)])
         )
 
     return df.to_dict("records"), fig, fig_hist
