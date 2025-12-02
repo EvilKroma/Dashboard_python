@@ -3,9 +3,9 @@ import requests
 
 from config import FULL_ENDPOINT, DEFAULT_LIMIT, TIMEOUT
 
-
+# Récupère les données de l'API
 def fetch_records(limit: int = DEFAULT_LIMIT) -> pd.DataFrame:
-	params = {"limit": min(limit, 100)}  # Limite par défautà à 100
+	params = {"limit": min(limit, 100)}  
 	resp = requests.get(FULL_ENDPOINT, params=params, timeout=TIMEOUT)
 	resp.raise_for_status()
 	payload = resp.json()
@@ -25,6 +25,7 @@ def fetch_records(limit: int = DEFAULT_LIMIT) -> pd.DataFrame:
 	return pd.DataFrame(rows)
 
 
+# Récupère plus de données en faisant plusieurs appels API
 def fetch_multiple_records(total_limit: int = 300) -> pd.DataFrame:
 	"""Fetch more records by making multiple API calls"""
 	all_rows = []
@@ -47,8 +48,7 @@ def fetch_multiple_records(total_limit: int = 300) -> pd.DataFrame:
 		except Exception as e:
 			print(f"Error fetching batch at offset {offset}: {e}")
 			break
-	
-	# Toutes les lignes
+
 	for row in all_rows:
 		if "geom" in row and isinstance(row["geom"], dict):
 			row["longitude"] = row["geom"].get("lon", "")

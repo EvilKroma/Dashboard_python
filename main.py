@@ -7,13 +7,11 @@ from src.utils.get_data import fetch_multiple_records
 
 app = Dash(__name__, suppress_callback_exceptions=True)
 
-# Layout principal utilisant simple_page comme conteneur
 app.layout = simple_page.get_layout()
 
-# État global pour stocker les données
 current_df = None
 
-# Callback pour la mise à jour du dashboard (home component)
+# Mettre a jour les components
 @callback(
     [Output('data-table', 'data'), Output('stations-map', 'figure'), Output('price-histogram', 'figure')],
     [Input('city-dropdown', 'value'), Input('stations-map', 'clickData')]
@@ -25,19 +23,17 @@ def update_dashboard(selected_city, click_data):
     
     if selected_city and selected_city != 'ALL':
         df = df[df['ville'] == selected_city]
-    
-    # Réinitialiser les index après filtrage pour éviter les problèmes d'indexation
+
     df = df.reset_index(drop=True)
     
-    # Vérifier si un point a été cliqué
+    # On vérifie si un point a été cliqué
     selected_station = None
     if click_data and 'points' in click_data and len(click_data['points']) > 0:
         point = click_data['points'][0]
-        # Récupérer l'index du point cliqué
         if 'pointIndex' in point and 0 <= point['pointIndex'] < len(df):
             selected_station = df.iloc[point['pointIndex']]
     
-    # Pour le hover des pts rouges
+    # Hover sur la carte
     hover_template = "<b>%{hovertext}</b><br>"
     hover_template += "Code postal: %{customdata[0]}<br>"
     hover_template += "Carburants: %{customdata[1]}<br>"
@@ -67,6 +63,7 @@ def update_dashboard(selected_city, click_data):
     
     hover_template += "Prix:<br>%{customdata[2]}<extra></extra>"
     
+    #je cré la carte ici
     fig = px.scatter_mapbox(
         df,
         lat='latitude',
@@ -96,7 +93,7 @@ def update_dashboard(selected_city, click_data):
     price_cols = ['gazole_prix', 'sp95_prix', 'sp98_prix', 'e85_prix', 'e10_prix', 'gplc_prix']
     available_cols = [c for c in price_cols if c in df.columns]
     
-    # Si une station est sélectionnée, afficher ses prix
+    # Si je sélectionne une station, ses prix s'affichent
     if selected_station is not None:
         station_prices = []
         for fuel, col in [('Gazole', 'gazole_prix'), ('SP95', 'sp95_prix'), ('SP98', 'sp98_prix'), 
@@ -135,13 +132,12 @@ def update_dashboard(selected_city, click_data):
             }
             prices_df['fuel'] = prices_df['fuel'].map(mapping).fillna(prices_df['fuel'])
 
-            # Calcul des moyennes par carburant et moyenne globale
+            # Calcul des moyennes
             mean_by_fuel = prices_df.groupby('fuel', as_index=False)['price'].mean()
             overall_mean = prices_df['price'].mean() if not prices_df.empty else None
             if overall_mean is not None:
                 mean_by_fuel = pd.concat([mean_by_fuel, pd.DataFrame([{'fuel': 'Moyenne', 'price': overall_mean}])], ignore_index=True)
 
-            # Bar chart montrant la moyenne par carburant + colonne "Moyenne"
             fig_hist = px.bar(
                 mean_by_fuel,
                 x='fuel',

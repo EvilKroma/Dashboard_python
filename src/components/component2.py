@@ -1,5 +1,6 @@
 from dash import html, dcc
 
+# Mise en place de l'histo dynamique des différents carburants
 def get_price_histogram_component():
     """Composant histogramme des prix des carburants"""
     return html.Div([
