@@ -4,6 +4,7 @@ import pandas as pd
 
 from src.pages import simple_page
 from src.utils.get_data import get_data_for_dashboard
+from src.utils.get_data import fetch_multiple_records
 from config import DEFAULT_LIMIT
 
 app = Dash(__name__, suppress_callback_exceptions=True)
@@ -17,16 +18,11 @@ current_df = None
     [Output('data-table', 'data'), Output('stations-map', 'figure'), Output('price-histogram', 'figure')],
     [Input('city-dropdown', 'value'), Input('stations-map', 'clickData')]
 )
-<<<<<<< HEAD
-def update_dashboard(selected_city):
-    df = get_data_for_dashboard(force_refresh=False)
-=======
 def update_dashboard(selected_city, click_data):
     global current_df
     df = fetch_multiple_records(300)
     current_df = df.copy()
     
->>>>>>> Flavien
     if selected_city and selected_city != 'ALL':
         df = df[df['ville'] == selected_city]
 
