@@ -5,16 +5,14 @@ import pandas as pd
 from src.utils.get_data import fetch_multiple_records
 from src.components import header, footer, component1, component2
 
-# Fetch initial
+# Search bar selon chaque ville
 initial_df = fetch_multiple_records(300)
 cities = sorted(initial_df['ville'].dropna().unique())
 
 def get_layout():
     return html.Div([
-        # Header (composant)
         header.get_header(),
         
-        # Section filtres
         html.Div([
             html.Div([
                 html.Label("Sélectionner une ville:", 
@@ -48,11 +46,11 @@ def get_layout():
         html.Div([
             # Carte (component1)
             component1.get_map_component(),
-            # Histogramme des prix (nouveau composant)
+            # Histogramme (component2)
             component2.get_price_histogram_component()
         ], className="row"),
         
-        # Section tableau
+        # Tableau qui envoie les détails du JSON
         html.Div([
             html.H3("Détails des stations", 
                 style={
@@ -96,6 +94,5 @@ def get_layout():
             'boxShadow': '0 2px 4px rgba(0,0,0,0.1)'
         }),
         
-        # Footer (composant)
         footer.get_footer()
     ])

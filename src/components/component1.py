@@ -1,5 +1,6 @@
 from dash import html, dcc
 
+# Mise en place de la map interactive des stations-service
 def get_map_component():
     """Composant carte interactive des stations-service"""
     return html.Div([

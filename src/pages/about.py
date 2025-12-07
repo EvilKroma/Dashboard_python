@@ -1,5 +1,6 @@
 from dash import html
 
+#Texte brut de la page "A prppos"
 def get_layout():
     return html.Div([
         html.Div([
