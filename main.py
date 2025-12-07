@@ -63,7 +63,7 @@ def update_dashboard(selected_city, click_data):
     
     hover_template += "Prix:<br>%{customdata[2]}<extra></extra>"
     
-    #je cré la carte ici
+    #je créé la carte ici
     fig = px.scatter_mapbox(
         df,
         lat='latitude',
