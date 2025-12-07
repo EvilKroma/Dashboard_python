@@ -3,7 +3,7 @@ import requests
 
 from config import FULL_ENDPOINT, DEFAULT_LIMIT, TIMEOUT
 
-# Récupère les données de l'API
+# Rquete GET à l'API pour récpérer les données
 def fetch_records(limit: int = DEFAULT_LIMIT) -> pd.DataFrame:
 	params = {"limit": min(limit, 100)}  
 	resp = requests.get(FULL_ENDPOINT, params=params, timeout=TIMEOUT)
