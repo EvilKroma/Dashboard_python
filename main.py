@@ -7,7 +7,7 @@ from src.utils.get_data import get_data_for_dashboard
 from src.utils.get_data import fetch_multiple_records
 from config import DEFAULT_LIMIT
 
-app = Dash(__name__, suppress_callback_exceptions=True)
+app = Dash(__name__, suppress_callback_exceptions=True, title="Dashboard - Prix des carburants en France")
 
 app.layout = simple_page.get_layout()
 
