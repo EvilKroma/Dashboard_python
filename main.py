@@ -18,6 +18,7 @@ current_df = None
     [Output('data-table', 'data'), 
      Output('stations-map', 'figure'), 
      Output('price-histogram', 'figure'),
+     Output('price-distribution', 'figure'),
      Output('gazole-vs-avg-price', 'figure')],
     [Input('city-dropdown', 'value'), 
      Input('stations-map', 'clickData'),
@@ -160,9 +161,14 @@ def update_dashboard(selected_city, click_data, selected_fuel):
             yaxis=dict(range=[0, max(4, 4)])
         )
 
+
     # Vrai histogramme de distribution des prix
-    if len(available_cols) > 0:
-        prices_df = df[available_cols].melt(var_name='fuel', value_name='price')
+    # Ce graphique utilise TOUTES les données (current_df), pas le filtre de ville
+    price_cols_all = ['gazole_prix', 'sp95_prix', 'sp98_prix', 'e85_prix', 'e10_prix', 'gplc_prix']
+    available_cols_all = [c for c in price_cols_all if c in current_df.columns]
+    
+    if len(available_cols_all) > 0:
+        prices_df = current_df[available_cols_all].melt(var_name='fuel', value_name='price')
         prices_df = prices_df.dropna(subset=['price'])
         prices_df = prices_df[prices_df['price'] > 0]
         mapping = {
@@ -180,8 +186,8 @@ def update_dashboard(selected_city, click_data, selected_fuel):
             x='price',
             color='fuel',
             nbins=20,
-            title='Distribution des prix des carburants',
-            labels={'price': 'Prix (€)', 'count': 'Nombre de stations'},
+            title='Distribution des prix des carburants (toutes villes)',
+            labels={'price': 'Prix (€)', 'count': 'Nombre de stations', 'fuel': 'Type de carburant'},
             barmode='group'
         )
         fig_distribution.update_layout(
@@ -192,7 +198,75 @@ def update_dashboard(selected_city, click_data, selected_fuel):
     else:
         fig_distribution = px.histogram(title="Aucun prix disponible")
 
-    return df.to_dict("records"), fig, fig_hist, fig_distribution
+
+    # Graphique dynamique: Prix d'un carburant vs Prix moyen de la station
+    # Ce graphique utilise TOUTES les données (current_df), pas le filtre de ville
+    fuel_labels = {
+        'gazole_prix': 'Gazole',
+        'sp95_prix': 'SP95',
+        'sp98_prix': 'SP98',
+        'e10_prix': 'E10',
+        'e85_prix': 'E85',
+        'gplc_prix': 'GPLc'
+    }
+    
+    selected_fuel_label = fuel_labels.get(selected_fuel, 'Carburant')
+    
+    # Utiliser current_df (toutes les données) au lieu de df (données filtrées par ville)
+    df_fuel = current_df[(current_df[selected_fuel].notna()) & (current_df[selected_fuel] > 0) & 
+                         (current_df['prix_moyen'].notna()) & (current_df['prix_moyen'] > 0)].copy()
+    
+    if len(df_fuel) > 0:
+        fig_fuel_avg = px.scatter(
+            df_fuel,
+            x='prix_moyen',
+            y=selected_fuel,
+            color='nb_carburants',
+            size='nb_carburants',
+            hover_data=['ville', 'carburants_disponibles'],
+            labels={'prix_moyen': 'Prix moyen de la station (€)', 
+                    selected_fuel: f'Prix du {selected_fuel_label} (€)',
+                    'nb_carburants': 'Nb carburants'},
+            title=f'Prix du {selected_fuel_label} en fonction du prix moyen de la station (toutes villes)',
+            color_continuous_scale='RdYlGn_r'
+        )
+        
+        # Ajouter une ligne de tendance
+        import numpy as np
+        if len(df_fuel) > 1:
+            z = np.polyfit(df_fuel['prix_moyen'], df_fuel[selected_fuel], 1)
+            p = np.poly1d(z)
+            x_trend = np.linspace(df_fuel['prix_moyen'].min(), df_fuel['prix_moyen'].max(), 100)
+            fig_fuel_avg.add_scatter(
+                x=x_trend, 
+                y=p(x_trend), 
+                mode='lines', 
+                name='Tendance',
+                line=dict(color='red', dash='dash', width=2)
+            )
+        
+        fig_fuel_avg.update_traces(marker=dict(opacity=0.7, line=dict(width=1, color='white')))
+        fig_fuel_avg.update_layout(
+            margin={"r":120,"t":40,"l":10,"b":10},
+            legend=dict(
+                orientation="v",
+                yanchor="bottom",
+                y=0.01,
+                xanchor="right",
+                x=0.99,
+                bgcolor="rgba(255, 255, 255, 0.9)",
+                bordercolor="rgba(0, 0, 0, 0.3)",
+                borderwidth=1
+            ),
+            coloraxis_colorbar=dict(
+                title="Nb carburants",
+                x=1.15
+            )
+        )
+    else:
+        fig_fuel_avg = px.scatter(title=f"Aucune donnée disponible pour {selected_fuel_label}")
+
+    return df.to_dict("records"), fig, fig_hist, fig_distribution, fig_fuel_avg
 
 if __name__ == "__main__":
     app.run(debug=True)

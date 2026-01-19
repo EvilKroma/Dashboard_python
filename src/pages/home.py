@@ -3,7 +3,7 @@ import plotly.express as px
 import pandas as pd
 
 from src.utils.get_data import fetch_multiple_records
-from src.components import header, footer, component1, component2, component3
+from src.components import header, footer, component1, component2, component3, component4
 
 # Search bar selon chaque ville
 initial_df = fetch_multiple_records(300)
@@ -52,6 +52,9 @@ def get_layout():
         
         # Distribution des prix (component3)
         component3.get_price_distribution_component(),
+        
+        # Graphique Prix du Gazole vs Prix moyen (component4)
+        component4.get_gazole_vs_avg_price_component(),
         
         # Tableau qui envoie les détails du JSON
         html.Div([
