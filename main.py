@@ -15,7 +15,7 @@ current_df = None
 
 # Mettre a jour les components
 @callback(
-    [Output('data-table', 'data'), Output('stations-map', 'figure'), Output('price-histogram', 'figure')],
+    [Output('data-table', 'data'), Output('stations-map', 'figure'), Output('price-histogram', 'figure'), Output('price-distribution', 'figure')],
     [Input('city-dropdown', 'value'), Input('stations-map', 'clickData')]
 )
 def update_dashboard(selected_city, click_data):
@@ -155,7 +155,39 @@ def update_dashboard(selected_city, click_data):
             yaxis=dict(range=[0, max(4, 4)])
         )
 
-    return df.to_dict("records"), fig, fig_hist
+    # Vrai histogramme de distribution des prix
+    if len(available_cols) > 0:
+        prices_df = df[available_cols].melt(var_name='fuel', value_name='price')
+        prices_df = prices_df.dropna(subset=['price'])
+        prices_df = prices_df[prices_df['price'] > 0]
+        mapping = {
+            'gazole_prix': 'Gazole',
+            'sp95_prix': 'SP95',
+            'sp98_prix': 'SP98',
+            'e85_prix': 'E85',
+            'e10_prix': 'E10',
+            'gplc_prix': 'GPLc'
+        }
+        prices_df['fuel'] = prices_df['fuel'].map(mapping).fillna(prices_df['fuel'])
+        
+        fig_distribution = px.histogram(
+            prices_df,
+            x='price',
+            color='fuel',
+            nbins=20,
+            title='Distribution des prix des carburants',
+            labels={'price': 'Prix (€)', 'count': 'Nombre de stations'},
+            barmode='group'
+        )
+        fig_distribution.update_layout(
+            margin={"r":10,"t":40,"l":10,"b":10},
+            xaxis_title='Prix (€)',
+            yaxis_title='Nombre de stations'
+        )
+    else:
+        fig_distribution = px.histogram(title="Aucun prix disponible")
+
+    return df.to_dict("records"), fig, fig_hist, fig_distribution
 
 if __name__ == "__main__":
     app.run(debug=True)
