@@ -3,7 +3,7 @@ import plotly.express as px
 import pandas as pd
 
 from src.utils.get_data import fetch_multiple_records
-from src.components import header, footer, component1, component2
+from src.components import header, footer, component1, component2, component4
 
 # Search bar selon chaque ville
 initial_df = fetch_multiple_records(300)
@@ -48,6 +48,12 @@ def get_layout():
             component1.get_map_component(),
             # Histogramme (component2)
             component2.get_price_histogram_component()
+        ], className="row"),
+        
+        # Nouveaux graphiques avec valeurs numériques sur X et Y
+        html.Div([
+            # Graphique: Prix d'un carburant vs Prix moyen
+            component4.get_gazole_vs_avg_price_component()
         ], className="row"),
         
         # Tableau qui envoie les détails du JSON
