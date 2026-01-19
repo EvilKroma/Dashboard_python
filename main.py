@@ -186,7 +186,7 @@ def update_dashboard(selected_city, click_data, selected_fuel):
             x='price',
             color='fuel',
             nbins=20,
-            title='Distribution des prix des carburants (toutes villes)',
+            title='Distribution des prix des carburants en France',
             labels={'price': 'Prix (€)', 'count': 'Nombre de stations', 'fuel': 'Type de carburant'},
             barmode='group'
         )
@@ -227,7 +227,7 @@ def update_dashboard(selected_city, click_data, selected_fuel):
             labels={'prix_moyen': 'Prix moyen de la station (€)', 
                     selected_fuel: f'Prix du {selected_fuel_label} (€)',
                     'nb_carburants': 'Nb carburants'},
-            title=f'Prix du {selected_fuel_label} en fonction du prix moyen de la station (toutes villes)',
+            title=f'Prix du {selected_fuel_label} vs prix moyen de tous les carburants de la station',
             color_continuous_scale='RdYlGn_r'
         )
         
