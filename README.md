@@ -62,11 +62,11 @@ Lors de la première utilisation, les données seront automatiquement récupér�
 
 Le projet suit un pipeline structuré en 5 étapes :
 
-1. ** Récupération** : Les données brutes sont récupérées depuis l'API gouvernementale
-2. ** Stockage raw** : Sauvegarde au format JSON dans `data/raw/rawdata.json`
-3. ** Nettoyage** : Traitement et structuration des données avec `clean_data.py`
-4. ** Stockage clean** : Sauvegarde des données nettoyées dans `data/cleaned/cleaneddata.json`
-5. ** Affichage** : Utilisation des données nettoyées pour le dashboard
+1. **Récupération** : Les données brutes sont récupérées depuis l'API gouvernementale
+2. **Stockage raw** : Sauvegarde au format JSON dans `data/raw/rawdata.json`
+3. **Nettoyage** : Traitement et structuration des données avec `clean_data.py`
+4. **Stockage clean** : Sauvegarde des données nettoyées dans `data/cleaned/cleaneddata.json`
+5. **Affichage** : Utilisation des données nettoyées pour le dashboard
 
 ### Caractéristiques des données
 - **Mise à jour** : Données en temps réel
