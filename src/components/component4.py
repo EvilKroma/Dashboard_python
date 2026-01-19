@@ -5,24 +5,7 @@ def get_gazole_vs_avg_price_component():
     """Composant scatter plot: Prix d'un carburant vs Prix moyen de la station"""
     return html.Div([
         html.Div([
-            html.H3("Prix du carburant vs Prix moyen de la station",
-                style={
-                    'color': '#2c3e50',
-                    'marginBottom': '10px',
-                    'fontFamily': 'Arial, sans-serif',
-                    'display': 'inline-block',
-                    'marginRight': '20px'
-                }
-            ),
             html.Div([
-                html.Label("Sélectionner un carburant:", 
-                    style={
-                        'fontWeight': 'bold',
-                        'marginRight': '10px',
-                        'color': '#2c3e50',
-                        'fontSize': '14px'
-                    }
-                ),
                 dcc.Dropdown(
                     id='fuel-type-dropdown',
                     options=[
