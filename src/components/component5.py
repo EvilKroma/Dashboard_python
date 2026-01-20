@@ -4,21 +4,21 @@ def get_top_stations_component():
     """Composant graphique top 5 des stations avec filtre prix et carburant"""
     return html.Div([
         html.Div([
-            # Filtre cher/pas cher
+            # Filtre cher/pas cher + dropdown carburant sur la même ligne
             html.Div([
                 html.Label("Afficher:", 
                     style={
                         'fontWeight': 'bold',
-                        'marginRight': '10px',
+                        'marginRight': '15px',
                         'color': '#2c3e50',
-                        'fontSize': '14px'
+                        'fontSize': '15px'
                     }
                 ),
                 dcc.RadioItems(
                     id='top-stations-filter',
                     options=[
-                        {'label': ' Prix moyens les plus chers', 'value': 'expensive'},
-                        {'label': ' Prix moyens les plus bas', 'value': 'cheap'}
+                        {'label': ' Prix les plus chers', 'value': 'expensive'},
+                        {'label': ' Prix les plus bas', 'value': 'cheap'}
                     ],
                     value='expensive',
                     inline=True,
@@ -27,23 +27,18 @@ def get_top_stations_component():
                         'gap': '30px'
                     },
                     labelStyle={
-                        'marginRight': '20px',
+                        'display': 'inline-block',
                         'cursor': 'pointer',
-                        'fontSize': '14px'
-                    }
-                )
-            ], style={'marginBottom': '15px', 'display': 'flex', 'alignItems': 'center'}),
-            
-            # Filtre carburant
-            html.Div([
-                html.Label("Carburant:", 
-                    style={
-                        'fontWeight': 'bold',
-                        'marginRight': '10px',
-                        'color': '#2c3e50',
-                        'fontSize': '14px'
+                        'fontSize': '14px',
+                        'padding': '8px 15px',
+                        'borderRadius': '6px',
+                        'backgroundColor': '#f0f0f0',
+                        'transition': 'all 0.3s',
+                        'marginRight': '0px'
                     }
                 ),
+                
+                # Dropdown carburant à côté
                 dcc.Dropdown(
                     id='top-stations-fuel-filter',
                     options=[
@@ -59,15 +54,23 @@ def get_top_stations_component():
                     clearable=False,
                     style={
                         'width': '200px',
-                        'fontSize': '14px'
+                        'display': 'inline-block',
+                        'borderRadius': '5px',
+                        'marginLeft': '30px'
                     }
                 )
-            ], style={'display': 'flex', 'alignItems': 'center', 'gap': '10px'})
+            ], style={
+                'display': 'flex',
+                'alignItems': 'center',
+                'backgroundColor': '#f8f9fa',
+                'padding': '15px 20px',
+                'borderRadius': '8px',
+                'marginBottom': '15px'
+            })
         ], style={
-            'marginBottom': '15px',
             'display': 'flex',
-            'alignItems': 'center',
-            'gap': '40px'
+            'flexDirection': 'column',
+            'gap': '10px'
         }),
         
         dcc.Graph(id='top-stations-graph', style={'height': '600px', 'borderRadius': '10px'})
