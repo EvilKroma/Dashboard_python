@@ -19,12 +19,15 @@ current_df = None
      Output('stations-map', 'figure'), 
      Output('price-histogram', 'figure'),
      Output('price-distribution', 'figure'),
-     Output('gazole-vs-avg-price', 'figure')],
+     Output('gazole-vs-avg-price', 'figure'),
+     Output('top-stations-graph', 'figure')],
     [Input('city-dropdown', 'value'), 
      Input('stations-map', 'clickData'),
-     Input('fuel-type-dropdown', 'value')]
+     Input('fuel-type-dropdown', 'value'),
+     Input('top-stations-filter', 'value'),
+     Input('top-stations-fuel-filter', 'value')]
 )
-def update_dashboard(selected_city, click_data, selected_fuel):
+def update_dashboard(selected_city, click_data, selected_fuel, top_stations_filter, top_stations_fuel):
     global current_df
     df = fetch_multiple_records(300)
     current_df = df.copy()
@@ -266,7 +269,82 @@ def update_dashboard(selected_city, click_data, selected_fuel):
     else:
         fig_fuel_avg = px.scatter(title=f"Aucune donnée disponible pour {selected_fuel_label}")
 
-    return df.to_dict("records"), fig, fig_hist, fig_distribution, fig_fuel_avg
+    # Créer le top 5 des stations avec filtre carburant
+    # Mapping des carburants avec labels
+    fuel_label_map = {
+        'prix_moyen': 'Prix moyen global',
+        'gazole_prix': 'Gazole',
+        'sp95_prix': 'SP95',
+        'sp98_prix': 'SP98',
+        'e10_prix': 'E10',
+        'e85_prix': 'E85',
+        'gplc_prix': 'GPLc'
+    }
+    
+    selected_fuel_label_top = fuel_label_map.get(top_stations_fuel, 'Prix moyen')
+    
+    # Filtrer les données valides pour le carburant sélectionné
+    df_fuel_filtered = current_df[(current_df[top_stations_fuel].notna()) & (current_df[top_stations_fuel] > 0)].copy()
+    
+    # Grouper par ville et prendre la meilleure/pire station
+    if top_stations_filter == 'expensive':
+        # Pour les plus chers : prendre le max par ville
+        df_top5 = df_fuel_filtered.loc[df_fuel_filtered.groupby('ville')[top_stations_fuel].idxmax()].copy()
+        df_top5 = df_top5.nlargest(5, top_stations_fuel)
+        title_text = f'Top 5 - {selected_fuel_label_top} les plus chers'
+        color_seq = ['#e74c3c']
+    else:
+        # Pour les plus bas : prendre le min par ville
+        df_top5 = df_fuel_filtered.loc[df_fuel_filtered.groupby('ville')[top_stations_fuel].idxmin()].copy()
+        df_top5 = df_top5.nsmallest(5, top_stations_fuel)
+        title_text = f'Top 5 - {selected_fuel_label_top} les plus bas'
+        color_seq = ['#27ae60']
+    
+    if len(df_top5) > 0:
+        # Afficher juste la ville
+        df_top5['station_label'] = df_top5['ville']
+        
+        # Créer le graphique
+        fig_top5 = px.bar(
+            df_top5,
+            x='station_label',
+            y=top_stations_fuel,
+            color_discrete_sequence=color_seq,
+            labels={top_stations_fuel: f'{selected_fuel_label_top} (€)', 'station_label': 'Ville'},
+            title=title_text,
+            text=top_stations_fuel
+        )
+        
+        fig_top5.update_traces(
+            textposition='outside',
+            marker=dict(line=dict(width=1, color='white')),
+            texttemplate='<b>%{y:.3f}€</b>'
+        )
+        
+        # Calculer l'intervalle précis pour l'axe Y
+        min_price = df_top5[top_stations_fuel].min()
+        max_price = df_top5[top_stations_fuel].max()
+        price_range = max_price - min_price
+        margin = max(price_range * 0.25, 0.02)  # 25% de marge ou minimum 0.02€
+        
+        fig_top5.update_layout(
+            margin={"r":10,"t":40,"l":10,"b":60},
+            xaxis_title='Ville',
+            yaxis_title=f'{selected_fuel_label_top} (€)',
+            yaxis=dict(
+                range=[min_price - margin, max_price + margin],
+                dtick=(price_range / 5) if price_range > 0 else 0.1  # 5 ticks pour la précision
+            ),
+            showlegend=False,
+            title_font_size=16,
+            title_font_color='#2c3e50',
+            xaxis_tickangle=-45,
+            hovermode='x unified'
+        )
+    else:
+        fig_top5 = px.bar(title="Aucune donnée disponible")
+
+    return df.to_dict("records"), fig, fig_hist, fig_distribution, fig_fuel_avg, fig_top5
 
 if __name__ == "__main__":
     app.run(debug=True)

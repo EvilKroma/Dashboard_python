@@ -3,7 +3,7 @@ import plotly.express as px
 import pandas as pd
 
 from src.utils.get_data import fetch_multiple_records
-from src.components import header, footer, component1, component2, component3, component4
+from src.components import header, footer, component1, component2, component3, component4, component5
 
 # Search bar selon chaque ville
 initial_df = fetch_multiple_records(300)
@@ -45,10 +45,18 @@ def get_layout():
         # Section principale avec carte et histogramme
         html.Div([
             # Carte (component1)
-            component1.get_map_component(),
-            # Histogramme (component2)
-            component2.get_price_histogram_component()
+            html.Div([
+                component1.get_map_component()
+            ], className="six columns"),
+            
+            # Colonne droite avec histogramme
+            html.Div([
+                component2.get_price_histogram_component()
+            ], className="six columns")
         ], className="row"),
+        
+        # Top 5 des stations les plus chères
+        component5.get_top_stations_component(),
         
         # Distribution des prix (component3)
         component3.get_price_distribution_component(),
