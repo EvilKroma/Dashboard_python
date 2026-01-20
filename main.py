@@ -169,8 +169,7 @@ def update_dashboard(selected_city, click_data, selected_fuel, top_stations_filt
         )
 
 
-    # Vrai histogramme de distribution des prix
-    # Ce graphique utilise TOUTES les données (current_df), pas le filtre de ville
+    # Hstogramme de distribution des prix
     price_cols_all = ['gazole_prix', 'sp95_prix', 'sp98_prix', 'e85_prix', 'e10_prix', 'gplc_prix']
     available_cols_all = [c for c in price_cols_all if c in current_df.columns]
     
@@ -207,7 +206,6 @@ def update_dashboard(selected_city, click_data, selected_fuel, top_stations_filt
 
 
     # Graphique dynamique: Prix d'un carburant vs Prix moyen de la station
-    # Ce graphique utilise TOUTES les données (current_df), pas le filtre de ville
     fuel_labels = {
         'gazole_prix': 'Gazole',
         'sp95_prix': 'SP95',
@@ -219,7 +217,6 @@ def update_dashboard(selected_city, click_data, selected_fuel, top_stations_filt
     
     selected_fuel_label = fuel_labels.get(selected_fuel, 'Carburant')
     
-    # Utiliser current_df (toutes les données) au lieu de df (données filtrées par ville)
     df_fuel = current_df[(current_df[selected_fuel].notna()) & (current_df[selected_fuel] > 0) & 
                          (current_df['prix_moyen'].notna()) & (current_df['prix_moyen'] > 0)].copy()
     
@@ -292,7 +289,6 @@ def update_dashboard(selected_city, click_data, selected_fuel, top_stations_filt
     
     # Grouper par ville et prendre la meilleure/pire station
     if top_stations_filter == 'expensive':
-        # Pour les plus chers : prendre le max par ville
         df_top5 = df_fuel_filtered.loc[df_fuel_filtered.groupby('ville')[top_stations_fuel].idxmax()].copy()
         df_top5 = df_top5.nlargest(5, top_stations_fuel)
         title_text = f'Top 5 - {selected_fuel_label_top} les plus chers'
@@ -329,7 +325,7 @@ def update_dashboard(selected_city, click_data, selected_fuel, top_stations_filt
         min_price = df_top5[top_stations_fuel].min()
         max_price = df_top5[top_stations_fuel].max()
         price_range = max_price - min_price
-        margin = max(price_range * 0.25, 0.02)  # 25% de marge ou minimum 0.02€
+        margin = max(price_range * 0.25, 0.02)
         
         fig_top5.update_layout(
             margin={"r":10,"t":40,"l":10,"b":120},
@@ -337,7 +333,7 @@ def update_dashboard(selected_city, click_data, selected_fuel, top_stations_filt
             yaxis_title=f'{selected_fuel_label_top} (€)',
             yaxis=dict(
                 range=[min_price - margin, max_price + margin],
-                dtick=(price_range / 5) if price_range > 0 else 0.1  # 5 ticks pour la précision
+                dtick=(price_range / 5) if price_range > 0 else 0.1
             ),
             showlegend=False,
             title_font_size=16,

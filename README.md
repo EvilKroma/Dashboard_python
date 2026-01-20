@@ -49,6 +49,8 @@ Lors de la première utilisation, les données seront automatiquement récupér�
 - **Page d'accueil** : Visualisation interactive des stations-service avec carte et tableau de données
 - **Filtrage** : Sélectionner une ville spécifique via le menu déroulant pour filtrer les résultats
 - **Carte interactive** : Points cliquables affichant les détails des stations (prix, carburants disponibles)
+- **Graphiques maniables** : Graphique dynamique et maniable selon les besoins de l'utilisateur
+- **Histogrammes** : Histogrammes structurés mettant en avant les données des carburants
 - **Page À propos** : Informations sur le projet et les données utilisées
 
 ## Data
