@@ -42,18 +42,17 @@ def get_layout():
             'boxShadow': '0 2px 4px rgba(0,0,0,0.1)'
         }),
         
-        # Section principale avec carte et histogramme
+        # Section principale avec carte et histogramme côte à côte
         html.Div([
-            # Carte (component1)
-            html.Div([
-                component1.get_map_component()
-            ], className="six columns"),
-            
-            # Colonne droite avec histogramme
-            html.Div([
-                component2.get_price_histogram_component()
-            ], className="six columns")
-        ], className="row"),
+            # Carte (component1) - gauche
+            component1.get_map_component(),
+            # Histogramme (component2) - droite
+            component2.get_price_histogram_component()
+        ], style={
+            'display': 'flex',
+            'gap': '20px',
+            'margin': '20px 0'
+        }),
         
         # Top 5 des stations les plus chères
         component5.get_top_stations_component(),
