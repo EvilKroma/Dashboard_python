@@ -123,6 +123,10 @@ def update_dashboard(selected_city, click_data, selected_fuel, top_stations_filt
                 labels={'price': 'Prix (€)', 'fuel': 'Type carburant'},
                 title=f"Prix à la station: {selected_station.get('ville', 'N/A')}"
             )
+            fig_hist.update_layout(
+                margin={"r":10,"t":40,"l":10,"b":10},
+                yaxis=dict(range=[0, 3])
+            )
         else:
             fig_hist = px.histogram(title="Aucun prix disponible pour cette station")
     else:
@@ -161,7 +165,7 @@ def update_dashboard(selected_city, click_data, selected_fuel, top_stations_filt
         fig_hist.update_traces(showlegend=False, opacity=0.85)
         fig_hist.update_layout(
             margin={"r":10,"t":40,"l":10,"b":10},
-            yaxis=dict(range=[0, max(4, 4)])
+            yaxis=dict(range=[0, 3])
         )
 
 
@@ -328,7 +332,7 @@ def update_dashboard(selected_city, click_data, selected_fuel, top_stations_filt
         margin = max(price_range * 0.25, 0.02)  # 25% de marge ou minimum 0.02€
         
         fig_top5.update_layout(
-            margin={"r":10,"t":40,"l":10,"b":60},
+            margin={"r":10,"t":40,"l":10,"b":120},
             xaxis_title='Ville',
             yaxis_title=f'{selected_fuel_label_top} (€)',
             yaxis=dict(
