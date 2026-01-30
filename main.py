@@ -1,7 +1,7 @@
 from dash import Dash, html, dcc, Input, Output, callback
 import plotly.express as px
 import pandas as pd
-
+import numpy as np
 from src.pages import simple_page
 from src.utils.get_data import get_data_for_dashboard
 from src.utils.get_data import fetch_multiple_records
@@ -236,7 +236,6 @@ def update_dashboard(selected_city, click_data, selected_fuel, top_stations_filt
         )
         
         # Ajouter une ligne de tendance
-        import numpy as np
         if len(df_fuel) > 1:
             z = np.polyfit(df_fuel['prix_moyen'], df_fuel[selected_fuel], 1)
             p = np.poly1d(z)
